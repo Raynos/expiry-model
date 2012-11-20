@@ -1,0 +1,34 @@
+{
+  "name": "expiry-model",
+  "version": "0.1.0",
+  "description": "A scuttlebutt model that expires keys",
+  "keywords": [],
+  "author": "Raynos <raynos2@gmail.com>",
+  "repository": "git://github.com/Raynos/expiry-model.git",
+  "main": "index",
+  "homepage": "https://github.com/Raynos/expiry-model",
+  "contributors": [
+    {
+      "name": "Jake Verbaten"
+    }
+  ],
+  "bugs": {
+    "url": "https://github.com/Raynos/expiry-model/issues",
+    "email": "raynos2@gmail.com"
+  },
+  "dependencies": {
+    "scuttlebutt": "~4.1.1"
+  },
+  "devDependencies": {
+    "tap": "~0.3.1"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://github.com/Raynos/expiry-model/raw/master/LICENSE"
+    }
+  ],
+  "scripts": {
+    "test": "tap --stderr --tap ./test"
+  }
+}
