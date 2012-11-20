@@ -24,7 +24,7 @@ function ExpiryModel(options) {
     Scuttlebutt.call(this, options)
 
     this._store = {}
-    this.expirty = (options && options.expiry) || DAY
+    this.expiry = (options && options.expiry) || DAY
 }
 
 function set(key, value) {
