@@ -48,7 +48,7 @@ function applyUpdate(update) {
     var key = update[0]
         , store = this._store
         , expiry = this.expiry
-        , existing = store[key] && [2]
+        , existing = store[key]
         , current = existing && existing[2]
         , ts = update[2]
 
@@ -56,7 +56,12 @@ function applyUpdate(update) {
         return false
     }
 
-    store[key] = update
+    if (update[1] === null) {
+        delete store[key]
+    } else {
+        store[key] = update
+    }
+
     this.emit("update", update[0], update[1], ts, update[3])
     return true
 }
@@ -71,8 +76,12 @@ function history(sources) {
         var record = store[key]
             , ts = record[2]
 
-        if (filter(record, sources) && ts > now - expiry) {
-            history.push(record)
+        if (ts > now - expiry) {
+            if (filter(record, sources)) {
+                history.push(record)
+            }
+        } else {
+            delete store[key]
         }
 
         return history
