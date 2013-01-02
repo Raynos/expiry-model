@@ -24,7 +24,8 @@
   "devDependencies": {
     "testem": "~0.2.50",
     "browserify": "~1.17.1",
-    "tape": "~0.1.5"
+    "tape": "~0.1.5",
+    "read-write-stream": "~0.1.6"
   },
   "licenses": [
     {
