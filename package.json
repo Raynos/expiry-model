@@ -17,10 +17,14 @@
     "email": "raynos2@gmail.com"
   },
   "dependencies": {
-    "scuttlebutt": "~4.1.1"
+    "scuttlebutt": "~5.3.2",
+    "xtend": "~1.0.3",
+    "lru-cache": "~2.2.1"
   },
   "devDependencies": {
-    "tap": "~0.3.1"
+    "testem": "~0.2.50",
+    "browserify": "~1.17.1",
+    "tape": "~0.1.5"
   },
   "licenses": [
     {
@@ -29,6 +33,7 @@
     }
   ],
   "scripts": {
-    "test": "tap --stderr --tap ./test"
+    "test": "node ./test/index.js",
+    "build": "browserify test/index.js -o test/bundle.js"
   }
 }

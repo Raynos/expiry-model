@@ -1,98 +1,127 @@
 var Scuttlebutt = require("scuttlebutt")
-    , filter = Scuttlebutt.filter
-    , inherits = require("util").inherits
+var extend = require("xtend")
+var LRU = require("lru-cache")
+var filter = Scuttlebutt.filter
 
-    , DAY = 1000 * 60 * 60 * 24
-
-inherits(ExpiryModel, Scuttlebutt)
-
-var proto = ExpiryModel.prototype
-
-proto.set = set
-proto.get = get
-proto.applyUpdate = applyUpdate
-proto.history = history
-proto.toJSON = toJSON
+var DAY = 1000 * 60 * 60 * 24
+var defaults = {
+    max: 500
+    , maxAge: DAY
+}
 
 module.exports = ExpiryModel
 
 function ExpiryModel(options) {
-    if (! (this instanceof ExpiryModel) ) {
-        return new ExpiryModel(options)
+    options = extend({}, defaults, options || {})
+
+    var scuttle = Scuttlebutt()
+    var maxAge = options.maxAge
+    var store = LRU(options)
+
+    scuttle.set = set
+    scuttle.get = get
+    scuttle.applyUpdate = applyUpdate
+    scuttle.toJSON = toJSON
+    scuttle.history = history
+
+    return scuttle
+
+    function set(key, value) {
+        scuttle.localUpdate([key, value])
     }
 
-    Scuttlebutt.call(this, options)
+    function get(key) {
+        var record = store.get(key)
 
-    this._store = {}
-    this.expiry = (options && options.expiry) || DAY
-}
-
-function set(key, value) {
-    if (value && !value._heartbeat) {
-        value._heartbeat = Date.now()
+        return record ? record[0][1] : null
     }
 
-    this.localUpdate(key, value)
-}
+    function getMergedRecord(update) {
+        var transaction = update[0]
+        var key = transaction[0]
+        var current = store.get(key)
 
-function get(key) {
-    var store = this._store
-        , record = store[key]
-
-    if (record) {
-        return record[1]
-    }
-}
-
-function applyUpdate(update) {
-    var key = update[0]
-        , store = this._store
-        , expiry = this.expiry
-        , existing = store[key]
-        , current = existing && existing[2]
-        , ts = update[2]
-
-    if (current > ts || ts < Date.now() - expiry) {
-        return false
-    }
-
-    if (update[1] === null) {
-        delete store[key]
-    } else {
-        store[key] = update
-    }
-
-    this.emit("update", update[0], update[1], ts, update[3])
-    return true
-}
-
-function history(sources) {
-    var self = this
-        , store = self._store
-        , expiry = self.expiry
-        , now = Date.now()
-
-    return Object.keys(store).reduce(function (history, key) {
-        var record = store[key]
-            , ts = record[2]
-
-        if (ts > now - expiry) {
-            if (filter(record, sources)) {
-                history.push(record)
-            }
-        } else {
-            delete store[key]
+        if (!current) {
+            return update.slice()
         }
 
-        return history
-    }, [])
-}
+        var currentValue = current[0][1]
+        var currentTs = current[1]
+        var value = transaction[1]
+        var ts = update[1]
 
-function toJSON() {
-    var store = this._store
+        if (typeof currentValue === "object" &&
+            typeof value === "object" && value !== null
+        ) {
+            if (currentTs > ts) {
+                value = extend({}, value, currentValue)
+            } else {
+                value = extend({}, currentValue, value)
+            }
+        } else if (currentTs > ts) {
+            return false
+        }
 
-    return Object.keys(store).reduce(function (out, key) {
-        out[key] = store[key][1]
-        return out
-    }, {})
+        return [[key, value], ts, update[2]]
+    }
+
+    function applyUpdate(update) {
+        var ts = update[1]
+        var key = update[0][0]
+
+        if (ts <= Date.now() - maxAge) {
+            return false
+        }
+
+        var record = getMergedRecord(update)
+
+        if (record === false) {
+            return false
+        } else if (record[0][1] === null) {
+            store.del(key)
+        } else {
+            store.set(key, record)
+        }
+
+        scuttle.emit("update", record[0][0], record[0][1]
+            , record[1], record[2])
+
+        return true
+    }
+
+    function toJSON() {
+        var hash = {}
+
+        store.forEach(function (record, key) {
+            hash[key] = record[0][1]
+        })
+
+        return hash
+    }
+
+    function history(sources) {
+        sources = sources || {}
+        var list = []
+        var now = Date.now()
+
+        store.forEach(function (record, key) {
+            var ts = record[1]
+
+            if (ts > now - maxAge) {
+                if (filter(record, sources)) {
+                    list.push(record)
+                }
+            } else {
+                store.del(key)
+            }
+        })
+
+        return list.sort(function (a, b) {
+            if (a[2] !== b[2]) {
+                return 0
+            }
+
+            return a[1] < b[1] ? -1 : 1
+        })
+    }
 }
