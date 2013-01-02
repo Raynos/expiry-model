@@ -35,5 +35,30 @@
   "scripts": {
     "test": "node ./test/index.js",
     "build": "browserify test/index.js -o test/bundle.js"
+  },
+  "testling": {
+    "files": "test/index.js",
+    "browsers": {
+      "ie": [
+        "8",
+        "9"
+      ],
+      "firefox": [
+        "15",
+        "17",
+        "nightly"
+      ],
+      "chrome": [
+        "22",
+        "23",
+        "canary"
+      ],
+      "opera": [
+        "12"
+      ],
+      "safari": [
+        "5.1"
+      ]
+    }
   }
 }
