@@ -1,6 +1,7 @@
 # expiry-model
 
 [![build status](https://secure.travis-ci.org/Raynos/expiry-model.png)](http://travis-ci.org/Raynos/expiry-model)
+
 [![browser support](http://ci.testling.com/Raynos/expiry-model.png)](http://ci.testling.com/Raynos/expiry-model)
 
 A scuttlebutt model that expires keys
