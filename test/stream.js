@@ -132,3 +132,31 @@ test("many keys", function (assert) {
         assert.end()
     }, 100)
 })
+
+test("sources get cleaned up", function (assert) {
+    var model1 = ExpiryModel()
+    var model2 = ExpiryModel()
+
+    var s1 = model1.createStream()
+    s1.pipe(model2.createStream()).pipe(s1)
+
+    model1.set("foo", "bar")
+
+    process.nextTick(function () {
+        var v = model2.get("foo")
+        assert.equal(v, "bar")
+
+        model1.dispose()
+
+        model2.set("foo", null)
+        var v = model2.get("foo")
+
+        assert.equal(v, null)
+
+        var sources = Object.keys(model2.sources)
+        assert.equal(sources.length, 1)
+        assert.equal(sources[0], model2.id)
+
+        assert.end()
+    })
+})

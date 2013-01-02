@@ -14,6 +14,10 @@ module.exports = ExpiryModel
 function ExpiryModel(options) {
     options = extend({}, defaults, options || {})
 
+    if (!options.dispose) {
+        options.dispose = dispose
+    }
+
     var scuttle = Scuttlebutt()
     var maxAge = options.maxAge
     var store = LRU(options)
@@ -25,6 +29,21 @@ function ExpiryModel(options) {
     scuttle.history = history
 
     return scuttle
+
+    function dispose(key, value) {
+        var source = value[2]
+        var found = false
+
+        store.forEach(function (record) {
+            if (record[2] === source && record[1] !== value[1]) {
+                found = true
+            }
+        })
+
+        if (!found) {
+            delete scuttle.sources[source]
+        }
+    }
 
     function set(key, value) {
         scuttle.localUpdate([key, value])

@@ -95,6 +95,7 @@ ExpiryModel is like [scuttlebutt/model][2] except you can
     expire.
  - configure when to clean up old data
  - configure a cap on how much data to hold in memory
+ - cleans up the scuttlebutts vector clock over time.
  - values set are shallow merged into each other
 
 ### `ExpiryModel(options)`
