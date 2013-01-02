@@ -56,15 +56,15 @@ test("outdated keys do not propagate", function (assert) {
         var s1 = model1.createStream()
         s1.pipe(model2.createStream()).pipe(s1)
 
-        process.nextTick(function () {
+        setTimeout(function () {
             var state1 = model1.toJSON()
             var state2 = model2.toJSON()
 
             assert.equal(Object.keys(state1).length, 0)
             assert.equal(Object.keys(state2).length, 0)
             assert.end()
-        })
-    }, 15)
+        }, 20)
+    }, 25)
 })
 
 test("exchange multiple keys", function (assert) {
