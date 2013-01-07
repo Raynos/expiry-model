@@ -17,7 +17,7 @@
     "email": "raynos2@gmail.com"
   },
   "dependencies": {
-    "scuttlebutt": "~5.3.2",
+    "scuttlebutt": "~5.5",
     "xtend": "~1.0.3",
     "lru-cache": "~2.2.1"
   },
